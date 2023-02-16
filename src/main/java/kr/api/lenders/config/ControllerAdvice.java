@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.NotNull;
 import kr.api.lenders.error.DuplicationException;
 import kr.api.lenders.error.NotFoundException;
+import kr.api.lenders.error.ParameterValidationException;
 import kr.api.lenders.error.ValidationExceptionDetail;
 import org.springframework.core.MethodParameter;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -111,7 +112,7 @@ public class ControllerAdvice implements ResponseBodyAdvice<Object> {
         return resBody;
     }
 
-    @ExceptionHandler({DuplicationException.class})
+    @ExceptionHandler({DuplicationException.class, ParameterValidationException.class})
     @ResponseStatus(BAD_REQUEST)
     @ResponseBody
     public Map<String, Object> handleBadRequestParameterException(final Throwable throwable) {
