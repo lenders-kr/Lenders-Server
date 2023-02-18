@@ -1,8 +1,7 @@
 package kr.api.lenders.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import kr.api.lenders.service.value.UserUpdateRequest;
+import kr.api.lenders.domain.type.UserSsoProviderType;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,25 +16,22 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "users")
+@Table(name = "user_sso_details")
 @DynamicUpdate
 @EntityListeners(AuditingEntityListener.class)
-public class User {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class UserSsoDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Email(message = "Invalid email format")
-    @Column(unique = true)
-    private String email;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    private String name;
+    private UserSsoProviderType provider;
 
-    @Column(length = 20)
-    private String nickname;
-
-    private String image;
+    private String identifier;
 
     @CreatedDate
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -46,13 +42,9 @@ public class User {
     private LocalDateTime updatedAt;
 
     @Builder
-    public User(String email, String name) {
-        this.email = email;
-        this.name = name;
-    }
-
-    public void updateInfo(UserUpdateRequest userUpdateRequest) {
-        this.nickname = userUpdateRequest.getNickname();
-        this.image = userUpdateRequest.getImage();
+    public UserSsoDetail(User user, UserSsoProviderType provider, String identifier) {
+        this.user = user;
+        this.provider = provider;
+        this.identifier = identifier;
     }
 }
