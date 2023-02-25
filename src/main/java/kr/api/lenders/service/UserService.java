@@ -4,11 +4,15 @@ import jakarta.validation.constraints.NotNull;
 import kr.api.lenders.domain.User;
 import kr.api.lenders.domain.UserRepository;
 import kr.api.lenders.domain.UserSsoDetail;
+import kr.api.lenders.error.DuplicationException;
 import kr.api.lenders.error.NotFoundException;
+import kr.api.lenders.error.ParameterValidationException;
+import kr.api.lenders.service.value.UserRegisterRequest;
 import kr.api.lenders.service.value.UserResponse;
 import kr.api.lenders.service.value.UserSocialLoginRequest;
 import kr.api.lenders.service.value.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,6 +23,9 @@ public class UserService {
 
     @NotNull
     private final transient UserSsoDetailService userSsoDetailService;
+
+    private static final String EMAIL_PATTERN = "\\A[\\w+\\-.]+@[a-z\\d\\-.]+\\.[a-z]+\\z";
+    private static final String PASSWORD_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[`~!@#$%^&*(){}\\[\\]:\";'<>?,.\\/\\-_=+])[A-Za-z\\d`~!@#$%^&*(){}\\[\\]:\";'<>?,.\\/\\-_=+]{8,}$";
 
     public User find(final long id) {
         /**
@@ -53,5 +60,35 @@ public class UserService {
         UserSsoDetail userSsoDetail = userSsoDetailService
                 .findOrCreate(userSocialLoginRequest.getProviderType(), userSocialLoginRequest.getIdentifier());
         return UserResponse.of(userSsoDetail.getUser());
+    }
+
+    public UserResponse register(UserRegisterRequest userRegisterRequest) {
+        if (!userRegisterRequest.getEmail().matches(EMAIL_PATTERN)) {
+            throw new ParameterValidationException("Invalid email format");
+        }
+        if (!userRegisterRequest.getPassword().matches(PASSWORD_PATTERN)) {
+            throw new ParameterValidationException("Invalid password format");
+        }
+
+        userRepository.findByEmail(userRegisterRequest.getEmail())
+                .ifPresent(user -> {throw new DuplicationException("Email already exists");});
+
+        /**
+         * password encryption
+         * [TODO]
+         *   later separate password encryption logic?
+         *   not a must.
+         */
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String encryptedPassword = encoder.encode(userRegisterRequest.getPassword());
+
+        User user = User.builder()
+                .email(userRegisterRequest.getEmail())
+                .password(encryptedPassword)
+                .name(userRegisterRequest.getName())
+                .build();
+        user = userRepository.save(user);
+
+        return UserResponse.of(user);
     }
 }
