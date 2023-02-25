@@ -123,6 +123,11 @@ public class ControllerAdvice implements ResponseBodyAdvice<Object> {
         return resBody;
     }
 
+    /**
+     * [TODO]
+     *   add handler when no request body is present (or consider combining with above handlers)
+     */
+
     private String getMessage(Throwable throwable) {
         if (throwable.getMessage() != null) {
             if (throwable instanceof NestedServletException) {

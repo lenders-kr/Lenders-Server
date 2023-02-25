@@ -1,5 +1,6 @@
 package kr.api.lenders.domain;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import kr.api.lenders.service.value.UserUpdateRequest;
@@ -30,6 +31,9 @@ public class User {
     @Column(unique = true)
     private String email;
 
+    @Nullable
+    private String password; // null on social login create user
+
     private String name;
 
     @Column(length = 20)
@@ -46,9 +50,11 @@ public class User {
     private LocalDateTime updatedAt;
 
     @Builder
-    public User(String email, String name) {
+    public User(String email, String password, String name) {
         this.email = email;
+        this.password = password;
         this.name = name;
+        this.nickname = name; // default nickname is name
     }
 
     public void updateInfo(UserUpdateRequest userUpdateRequest) {
