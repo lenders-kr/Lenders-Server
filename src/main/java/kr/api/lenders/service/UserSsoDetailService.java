@@ -5,6 +5,7 @@ import kr.api.lenders.domain.User;
 import kr.api.lenders.domain.UserRepository;
 import kr.api.lenders.domain.UserSsoDetail;
 import kr.api.lenders.domain.UserSsoDetailRepository;
+import kr.api.lenders.domain.type.UserRoleType;
 import kr.api.lenders.domain.type.UserSsoProviderType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ public class UserSsoDetailService {
         User user = User.builder()
                 .email("test@1.com") // [TODO] add email from identifier toke
                 .name("test") // [TODO] add name from identifier token
+                .role(UserRoleType.ROLE_USER)
                 .build();
         user = userRepository.save(user);
 

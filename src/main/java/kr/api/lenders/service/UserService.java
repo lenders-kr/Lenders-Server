@@ -4,7 +4,9 @@ import jakarta.validation.constraints.NotNull;
 import kr.api.lenders.domain.User;
 import kr.api.lenders.domain.UserRepository;
 import kr.api.lenders.domain.UserSsoDetail;
+import kr.api.lenders.domain.type.UserRoleType;
 import kr.api.lenders.error.DuplicationException;
+import kr.api.lenders.error.ForbiddenException;
 import kr.api.lenders.error.NotFoundException;
 import kr.api.lenders.error.ParameterValidationException;
 import kr.api.lenders.service.value.UserRegisterRequest;
@@ -28,10 +30,6 @@ public class UserService {
     private static final String PASSWORD_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[`~!@#$%^&*(){}\\[\\]:\";'<>?,.\\/\\-_=+])[A-Za-z\\d`~!@#$%^&*(){}\\[\\]:\";'<>?,.\\/\\-_=+]{8,}$";
 
     public User find(final long id) {
-        /**
-         * [TODO]
-         *   add status check
-         */
         return userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
@@ -40,11 +38,14 @@ public class UserService {
         return UserResponse.of(find(id));
     }
 
-    /**
-     * [TODO]
-     *   implement auth
-     */
-    public UserResponse update(final UserUpdateRequest userUpdateRequest) {
+    public UserResponse update(
+            final User currentUser,
+            final UserUpdateRequest userUpdateRequest
+    ) {
+        if (currentUser.getId() != userUpdateRequest.getId()) {
+            throw new ForbiddenException("You are not allowed to update other user's info");
+        }
+
         User user = find(userUpdateRequest.getId());
         UserUpdateRequest updateRequest = UserUpdateRequest.builder()
                 .nickname(userUpdateRequest.getNickname())
@@ -62,7 +63,7 @@ public class UserService {
         return UserResponse.of(userSsoDetail.getUser());
     }
 
-    public UserResponse register(UserRegisterRequest userRegisterRequest) {
+    public User register(UserRegisterRequest userRegisterRequest) {
         if (!userRegisterRequest.getEmail().matches(EMAIL_PATTERN)) {
             throw new ParameterValidationException("Invalid email format");
         }
@@ -73,12 +74,6 @@ public class UserService {
         userRepository.findByEmail(userRegisterRequest.getEmail())
                 .ifPresent(user -> {throw new DuplicationException("Email already exists");});
 
-        /**
-         * password encryption
-         * [TODO]
-         *   later separate password encryption logic?
-         *   not a must.
-         */
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         String encryptedPassword = encoder.encode(userRegisterRequest.getPassword());
 
@@ -86,9 +81,8 @@ public class UserService {
                 .email(userRegisterRequest.getEmail())
                 .password(encryptedPassword)
                 .name(userRegisterRequest.getName())
+                .role(UserRoleType.ROLE_USER)
                 .build();
-        user = userRepository.save(user);
-
-        return UserResponse.of(user);
+        return userRepository.save(user);
     }
 }

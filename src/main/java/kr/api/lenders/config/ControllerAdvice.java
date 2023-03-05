@@ -3,10 +3,7 @@ package kr.api.lenders.config;
 import jakarta.persistence.NoResultException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.NotNull;
-import kr.api.lenders.error.DuplicationException;
-import kr.api.lenders.error.NotFoundException;
-import kr.api.lenders.error.ParameterValidationException;
-import kr.api.lenders.error.ValidationExceptionDetail;
+import kr.api.lenders.error.*;
 import org.springframework.core.MethodParameter;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -30,8 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice
 public class ControllerAdvice implements ResponseBodyAdvice<Object> {
@@ -118,6 +114,17 @@ public class ControllerAdvice implements ResponseBodyAdvice<Object> {
     public Map<String, Object> handleBadRequestParameterException(final Throwable throwable) {
         Map<String, Object> resBody = new HashMap<>();
         resBody.put("status", BAD_REQUEST.value());
+        resBody.put("message", getMessage(throwable));
+
+        return resBody;
+    }
+
+    @ExceptionHandler({ForbiddenException.class})
+    @ResponseStatus(FORBIDDEN)
+    @ResponseBody
+    public Map<String, Object> handleForbiddenParameterException(final Throwable throwable) {
+        Map<String, Object> resBody = new HashMap<>();
+        resBody.put("status", FORBIDDEN.value());
         resBody.put("message", getMessage(throwable));
 
         return resBody;
