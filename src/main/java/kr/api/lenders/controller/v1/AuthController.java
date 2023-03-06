@@ -2,10 +2,11 @@ package kr.api.lenders.controller.v1;
 
 import jakarta.validation.Valid;
 import kr.api.lenders.domain.User;
+import kr.api.lenders.domain.UserSsoDetail;
 import kr.api.lenders.service.UserService;
+import kr.api.lenders.service.UserSsoDetailService;
 import kr.api.lenders.service.value.AuthResponse;
 import kr.api.lenders.service.value.UserRegisterRequest;
-import kr.api.lenders.service.value.UserResponse;
 import kr.api.lenders.service.value.UserSocialLoginRequest;
 import kr.api.lenders.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 @Validated
 public class AuthController {
     private final UserService userService;
+    private final UserSsoDetailService userSsoDetailService;
 
     @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
     public AuthResponse register(@Valid @RequestBody final UserRegisterRequest userRegisterRequest) {
@@ -34,12 +36,15 @@ public class AuthController {
                 .build();
     }
 
-    /**
-     * [TODO]
-     *   change response to AuthResponse
-     */
     @PostMapping(value = "/login/google", produces = MediaType.APPLICATION_JSON_VALUE)
-    public UserResponse googleLogin(@Valid @RequestBody final UserSocialLoginRequest userSocialLoginRequest) {
-        return userService.socialLogin(userSocialLoginRequest);
+    public AuthResponse googleLogin(@Valid @RequestBody final UserSocialLoginRequest userSocialLoginRequest) {
+        UserSsoDetail userSsoDetail = userSsoDetailService.findOrCreate(
+                userSocialLoginRequest.getProviderType(),
+                userSocialLoginRequest.getToken()
+        );
+        String token = JwtUtil.generateToken(new HashMap<>(), userSsoDetail.getUser());
+        return AuthResponse.builder()
+                .token(token)
+                .build();
     }
 }

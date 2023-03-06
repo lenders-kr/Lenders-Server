@@ -3,7 +3,6 @@ package kr.api.lenders.service;
 import jakarta.validation.constraints.NotNull;
 import kr.api.lenders.domain.User;
 import kr.api.lenders.domain.UserRepository;
-import kr.api.lenders.domain.UserSsoDetail;
 import kr.api.lenders.domain.type.UserRoleType;
 import kr.api.lenders.error.DuplicationException;
 import kr.api.lenders.error.ForbiddenException;
@@ -11,7 +10,6 @@ import kr.api.lenders.error.NotFoundException;
 import kr.api.lenders.error.ParameterValidationException;
 import kr.api.lenders.service.value.UserRegisterRequest;
 import kr.api.lenders.service.value.UserResponse;
-import kr.api.lenders.service.value.UserSocialLoginRequest;
 import kr.api.lenders.service.value.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -55,12 +53,6 @@ public class UserService {
         user = userRepository.save(user);
 
         return UserResponse.of(user);
-    }
-
-    public UserResponse socialLogin(UserSocialLoginRequest userSocialLoginRequest) {
-        UserSsoDetail userSsoDetail = userSsoDetailService
-                .findOrCreate(userSocialLoginRequest.getProviderType(), userSocialLoginRequest.getIdentifier());
-        return UserResponse.of(userSsoDetail.getUser());
     }
 
     public User register(UserRegisterRequest userRegisterRequest) {

@@ -18,5 +18,5 @@ public class UserSocialLoginRequest {
     private UserSsoProviderType providerType;
 
     @NotNull
-    private String identifier;
+    private String token;
 }
