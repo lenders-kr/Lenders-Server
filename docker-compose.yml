@@ -1,0 +1,41 @@
+version: "3.8"
+services:
+  api:
+    build: .
+    container_name: lenders-api
+    command: java -jar /app.jar
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./build/libs:/app
+    networks:
+      - lenders-network
+    depends_on:
+      - local_db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://local_db:5432/lenders
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+      - SPRING_JPA_HIBERNATE_JDBC_TIME_ZONE=Asia/Seoul
+      - SPRING_JPA_SHOW_SQL=true
+      - SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=true
+      - SPRING_JPA_DATABASE=postgresql
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+  local_db:
+    image: postgres:13.4
+    ports:
+      - "5678:5432"
+    volumes:
+      - ./tmp/docker/lenders-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: lenders
+      POSTGRES_HOST_AUTH_METHOD: trust
+    restart: always
+    networks:
+      - lenders-network
+
+networks:
+  lenders-network:
+    driver: bridge
