@@ -3,7 +3,7 @@ services:
   api:
     build: .
     container_name: lenders-api
-    command: java -jar /app.jar
+    command: java -jar target/lenders-0.0.1-SNAPSHOT.jar
     ports:
       - "8080:8080"
     volumes:
