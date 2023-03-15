@@ -24,7 +24,7 @@ public class SecurityConfig {
                 .csrf()
                 .disable() // disable csrf because we are using jwt
                 .authorizeHttpRequests()
-                .requestMatchers("/auth/**") // open all auth endpoints
+                .requestMatchers("/auth/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/swagger-resources", "/v3/api-docs/**", "/proxy/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
