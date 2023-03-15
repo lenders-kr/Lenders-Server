@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import kr.api.lenders.error.*;
 import org.springframework.core.MethodParameter;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
@@ -51,7 +50,7 @@ public class ControllerAdvice implements ResponseBodyAdvice<Object> {
     }
 
     @ExceptionHandler({NoHandlerFoundException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(NOT_FOUND)
     @ResponseBody
     public Map<String, Object> handleNoHandlerFoundException(NoHandlerFoundException e) {
         Map<String, Object> resBody = new HashMap<>();
