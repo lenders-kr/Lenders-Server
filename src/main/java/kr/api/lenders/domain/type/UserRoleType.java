@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public enum UserRoleType {
-    ROLE_USER(0), ROLE_ADMIN(1);
+    ROLE_USER("ROLE_USER"), ROLE_ADMIN("ROLE_ADMIN");
 
     @Getter
-    private final int code;
+    private final String code;
 }

@@ -5,8 +5,11 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public enum UserSsoProviderType {
-    GOOGLE("GOOGLE");
+public enum PostStatusType {
+    AVAILABLE("AVAILABLE"),
+    TRADING("TRADING"),
+    SOLD("SOLD"),
+    REMOVED("REMOVED");
 
     @Getter
     private final String code;
