@@ -15,7 +15,7 @@ import org.hibernate.validator.constraints.Length;
 @Data
 @AllArgsConstructor
 @Builder
-public class PostCreateRequest {
+public class PostCreateOrUpdateRequest {
     @Parameter(
             name = "title",
             description = "Title of post (1 ~ 50 characters)",

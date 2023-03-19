@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import kr.api.lenders.controller.annotation.ValueOfEnum;
 import kr.api.lenders.domain.type.PostCategoryType;
 import kr.api.lenders.domain.type.PostStatusType;
+import kr.api.lenders.service.value.PostCreateOrUpdateRequest;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,7 +32,7 @@ public class Post {
     private long id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     @JsonIgnore // prevent infinite loop
     private User user;
@@ -50,9 +52,11 @@ public class Post {
     private String currency;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     private PostCategoryType category = PostCategoryType.OTHER;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     private PostStatusType status = PostStatusType.AVAILABLE;
 
     @Nullable // nullable since there may not be any trader for a post
@@ -89,5 +93,22 @@ public class Post {
         this.price = price;
         this.currency = currency;
         this.category = category;
+    }
+
+    public void updateInfo(PostCreateOrUpdateRequest createOrUpdateRequest) {
+        this.title = createOrUpdateRequest.getTitle();
+        this.description = createOrUpdateRequest.getDescription();
+        this.price = createOrUpdateRequest.getPrice();
+        this.currency = createOrUpdateRequest.getCurrency();
+        this.category = PostCategoryType.valueOf(createOrUpdateRequest.getCategory());
+    }
+
+    public void updateTrader(User trader) {
+        this.trader = trader;
+        this.status = trader == null ? PostStatusType.AVAILABLE : PostStatusType.TRADING;
+    }
+
+    public void remove() {
+        this.status = PostStatusType.REMOVED;
     }
 }

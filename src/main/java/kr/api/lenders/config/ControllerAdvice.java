@@ -8,6 +8,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.validation.BindingResult;
@@ -96,7 +97,11 @@ public class ControllerAdvice implements ResponseBodyAdvice<Object> {
         return validationExceptionDetail;
     }
 
-    @ExceptionHandler({NotFoundException.class, NoResultException.class, EmptyResultDataAccessException.class})
+    @ExceptionHandler({
+            NotFoundException.class,
+            NoResultException.class,
+            EmptyResultDataAccessException.class
+    })
     @ResponseStatus(NOT_FOUND)
     @ResponseBody
     public Map<String, Object> handleEmptyResultDataAccessException(final Throwable throwable) {
@@ -107,7 +112,12 @@ public class ControllerAdvice implements ResponseBodyAdvice<Object> {
         return resBody;
     }
 
-    @ExceptionHandler({DuplicationException.class, ParameterValidationException.class})
+    @ExceptionHandler({
+            DuplicationException.class,
+            ParameterValidationException.class,
+            HttpMessageNotReadableException.class,
+            BadRequestException.class
+    })
     @ResponseStatus(BAD_REQUEST)
     @ResponseBody
     public Map<String, Object> handleBadRequestParameterException(final Throwable throwable) {

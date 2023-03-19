@@ -37,19 +37,16 @@ public class UserService {
     }
 
     public UserResponse update(
+            final long id,
             final User currentUser,
             final UserUpdateRequest userUpdateRequest
     ) {
-        if (currentUser.getId() != userUpdateRequest.getId()) {
+        User user = find(id);
+        if (currentUser.getId() != user.getId()) {
             throw new ForbiddenException("You are not allowed to update other user's info");
         }
 
-        User user = find(userUpdateRequest.getId());
-        UserUpdateRequest updateRequest = UserUpdateRequest.builder()
-                .nickname(userUpdateRequest.getNickname())
-                .image(userUpdateRequest.getImage())
-                .build();
-        user.updateInfo(updateRequest);
+        user.updateInfo(userUpdateRequest);
         user = userRepository.save(user);
 
         return UserResponse.of(user);

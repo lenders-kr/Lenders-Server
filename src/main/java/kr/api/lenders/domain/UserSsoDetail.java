@@ -29,6 +29,7 @@ public class UserSsoDetail {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Enumerated(EnumType.STRING)
     private UserSsoProviderType provider;
 
     private String identifier;
