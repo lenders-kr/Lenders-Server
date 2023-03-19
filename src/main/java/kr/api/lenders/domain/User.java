@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import kr.api.lenders.controller.annotation.ValueOfEnum;
 import kr.api.lenders.domain.type.UserRoleType;
 import kr.api.lenders.service.value.UserUpdateRequest;
 import lombok.*;
@@ -47,6 +48,7 @@ public class User implements UserDetails {
     private String image;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     private UserRoleType role;
 
     @CreatedDate

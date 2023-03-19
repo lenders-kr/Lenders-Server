@@ -60,11 +60,13 @@ public class UserController {
                     content = @Content(mediaType = "application/json",schema = @Schema(implementation = UserResponse.class))
             )
     })
-    @PutMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public UserResponse updateUser(
+            @PathVariable("id") @Min(1) final long id,
             @ParameterObject @Valid @RequestBody final UserUpdateRequest userUpdateRequest,
             final Authentication authentication) { // [TODO] switch to annotation to get current user
         final User currentUser = (User) authentication.getPrincipal();
-        return userService.update(currentUser, userUpdateRequest);
+        System.out.println("currentUser = " + currentUser + ", id: " + id);
+        return userService.update(id, currentUser, userUpdateRequest);
     }
 }

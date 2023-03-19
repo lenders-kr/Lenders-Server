@@ -10,8 +10,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import kr.api.lenders.domain.User;
 import kr.api.lenders.service.PostService;
-import kr.api.lenders.service.value.PostCreateRequest;
+import kr.api.lenders.service.value.PostCreateOrUpdateRequest;
 import kr.api.lenders.service.value.PostResponse;
+import kr.api.lenders.service.value.PostUpdateTraderRequest;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
@@ -50,9 +51,59 @@ public class PostController {
     })
     @PostMapping(value = "/post", produces = MediaType.APPLICATION_JSON_VALUE)
     public PostResponse savePost(
-            @ParameterObject @Valid @RequestBody final PostCreateRequest postCreateRequest,
+            @ParameterObject @Valid @RequestBody final PostCreateOrUpdateRequest postCreateOrUpdateRequest,
             final Authentication authentication) {
         final User currentUser = (User) authentication.getPrincipal();
-        return postService.save(postCreateRequest, currentUser);
+        return postService.save(postCreateOrUpdateRequest, currentUser);
+    }
+
+    @Operation(summary = "Update post", description = "Update post")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = PostResponse.class))
+            )
+    })
+    @PutMapping(value = "/posts/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PostResponse updatePost(
+            @PathVariable("id") final long id,
+            @ParameterObject @Valid @RequestBody final PostCreateOrUpdateRequest postCreateOrUpdateRequest,
+            final Authentication authentication) {
+        final User currentUser = (User) authentication.getPrincipal();
+        return postService.update(id, postCreateOrUpdateRequest, currentUser);
+    }
+
+    @Operation(summary = "Update post trader", description = "Update post trader")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = PostResponse.class))
+            )
+    })
+    @PutMapping(value = "/posts/{id}/trader", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PostResponse updatePostTrader(
+            @PathVariable("id") final long id,
+            @ParameterObject @Valid @RequestBody final PostUpdateTraderRequest postUpdateTraderRequest,
+            final Authentication authentication) {
+        System.out.println("postUpdateTraderRequest = " + postUpdateTraderRequest);
+        final User currentUser = (User) authentication.getPrincipal();
+        return postService.updateTrader(id, currentUser, postUpdateTraderRequest);
+    }
+
+    @Operation(summary = "Remove post", description = "Remove post by id")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = PostResponse.class))
+            )
+    })
+    @DeleteMapping(value = "/posts/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PostResponse removePost(@PathVariable("id") final long id,
+                           final Authentication authentication) {
+        final User currentUser = (User) authentication.getPrincipal();
+        return postService.remove(id, currentUser);
     }
 }
