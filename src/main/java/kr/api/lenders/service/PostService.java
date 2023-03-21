@@ -1,9 +1,7 @@
 package kr.api.lenders.service;
 
 import jakarta.validation.constraints.NotNull;
-import kr.api.lenders.domain.Post;
-import kr.api.lenders.domain.PostRepository;
-import kr.api.lenders.domain.User;
+import kr.api.lenders.domain.*;
 import kr.api.lenders.domain.type.PostCategoryType;
 import kr.api.lenders.domain.type.PostStatusType;
 import kr.api.lenders.error.BadRequestException;
@@ -14,6 +12,9 @@ import kr.api.lenders.service.value.PostResponse;
 import kr.api.lenders.service.value.PostUpdateTraderRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +45,14 @@ public class PostService {
                 .build();
         post = postRepository.save(post);
 
+        if (!postCreateOrUpdateRequest.getImages().isEmpty()) {
+            List<PostImage> images = newPostImages(post.getId(), postCreateOrUpdateRequest.getImages());
+            for (PostImage image : images) {
+                post.addImage(image);
+            }
+            post = postRepository.save(post);
+        }
+
         return PostResponse.of(post);
     }
 
@@ -58,7 +67,16 @@ public class PostService {
         }
 
         post.updateInfo(postCreateOrUpdateRequest);
-        post = postRepository.save(post);
+        if (!post.getImages().isEmpty()) {
+            post.removeAllImages();
+        }
+        if (!postCreateOrUpdateRequest.getImages().isEmpty()) {
+            List<PostImage> newPostImageList = newPostImages(post.getId(), postCreateOrUpdateRequest.getImages());
+            for (PostImage image : newPostImageList) {
+                post.addImage(image);
+            }
+            post = postRepository.save(post);
+        }
 
         return PostResponse.of(post);
     }
@@ -96,5 +114,23 @@ public class PostService {
         post = postRepository.save(post);
 
         return PostResponse.of(post);
+    }
+
+    private List<PostImage> newPostImages(long postId, List<String> images) {
+        if (images.size() > 10) {
+            throw new BadRequestException("Cannot upload more than 10 images");
+        }
+
+        List<PostImage> newPostImages = new ArrayList<>();
+        byte seq = 0;
+        for (String image : images) {
+            PostImage postImage = PostImage.builder()
+                    .postId(postId)
+                    .image(image)
+                    .seq(seq++)
+                    .build();
+            newPostImages.add(postImage);
+        }
+        return newPostImages;
     }
 }
