@@ -4,14 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import kr.api.lenders.controller.annotation.ValueOfEnum;
 import kr.api.lenders.domain.type.PostCategoryType;
 import kr.api.lenders.domain.type.PostStatusType;
 import kr.api.lenders.service.value.PostCreateOrUpdateRequest;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -19,6 +15,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -81,6 +79,9 @@ public class Post {
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 
+    @OneToMany(mappedBy="postId", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<PostImage> images = new ArrayList<>();
+
     /**
      * [TODO] add location field
      */
@@ -110,5 +111,13 @@ public class Post {
 
     public void remove() {
         this.status = PostStatusType.REMOVED;
+    }
+
+    public void addImage(PostImage postImage) {
+        this.images.add(postImage);
+    }
+
+    public void removeAllImages() {
+        this.images.clear();
     }
 }

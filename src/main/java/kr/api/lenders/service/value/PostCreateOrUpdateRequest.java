@@ -12,6 +12,8 @@ import lombok.Builder;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @Builder
@@ -64,6 +66,15 @@ public class PostCreateOrUpdateRequest {
     )
     @NotBlank
     private String currency;
+
+    @Parameter(
+            name = "images",
+            description = "Images of post",
+            required = true,
+            schema = @Schema(type = "array", format = "string")
+    )
+    @NotNull
+    private List<String> images;
 
     /**
      * [TODO] add location field

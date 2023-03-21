@@ -2,12 +2,14 @@ package kr.api.lenders.service.value;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import kr.api.lenders.domain.Post;
+import kr.api.lenders.domain.PostImage;
 import kr.api.lenders.domain.type.PostCategoryType;
 import kr.api.lenders.domain.type.PostStatusType;
 import lombok.Builder;
 import lombok.Value;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Value
 @Builder
@@ -30,6 +32,8 @@ public class PostResponse {
 
     PostStatusType status;
 
+    List<PostImage> images;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
     LocalDateTime tradedAt;
 
@@ -49,6 +53,7 @@ public class PostResponse {
                 .currency(post.getCurrency())
                 .category(post.getCategory())
                 .status(post.getStatus())
+                .images(post.getImages())
                 .tradedAt(post.getTradedAt())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt());
