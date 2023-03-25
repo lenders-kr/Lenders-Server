@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import kr.api.lenders.domain.User;
 import kr.api.lenders.service.ReviewService;
@@ -15,9 +16,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "reviews", description = "Review API")
 @RestController
@@ -42,5 +41,18 @@ public class ReviewController {
     ) {
         User currentUser = (User) authentication.getPrincipal();
         return reviewService.save(currentUser, reviewCreateRequest);
+    }
+
+    @Operation(summary = "Get review", description = "Get review")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    useReturnTypeSchema = true
+            )
+    })
+    @GetMapping(value = "/reviews/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ReviewResponse getReview(@PathVariable("id") @Min(1) final long id) {
+        return reviewService.findOne(id);
     }
 }

@@ -105,8 +105,13 @@ public class Post {
     }
 
     public void updateTrader(User trader) {
-        this.trader = trader;
-        this.status = trader == null ? PostStatusType.AVAILABLE : PostStatusType.TRADING;
+        if (trader == null) {
+            this.trader = null;
+            this.status = PostStatusType.AVAILABLE;
+        } else {
+            this.trader = trader;
+            this.status = PostStatusType.RESERVING;
+        }
     }
 
     public void remove() {
