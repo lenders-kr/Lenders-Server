@@ -13,6 +13,7 @@ import kr.api.lenders.domain.UserSsoDetail;
 import kr.api.lenders.service.UserService;
 import kr.api.lenders.service.UserSsoDetailService;
 import kr.api.lenders.service.value.AuthResponse;
+import kr.api.lenders.service.value.UserLoginReqeust;
 import kr.api.lenders.service.value.UserRegisterRequest;
 import kr.api.lenders.service.value.UserSocialLoginRequest;
 import kr.api.lenders.util.JwtUtil;
@@ -50,6 +51,23 @@ public class AuthController {
     @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
     public AuthResponse register(@ParameterObject @Valid @RequestBody final UserRegisterRequest userRegisterRequest) {
         User user = userService.register(userRegisterRequest);
+        String token = JwtUtil.generateToken(new HashMap<>(), user);
+        return AuthResponse.builder()
+                .token(token)
+                .build();
+    }
+
+    @Operation(summary = "Login", description = "Login with email and password")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class))
+            )
+    })
+    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
+    public AuthResponse login(@ParameterObject @Valid @RequestBody final UserLoginReqeust userLoginReqeust) {
+        User user = userService.login(userLoginReqeust);
         String token = JwtUtil.generateToken(new HashMap<>(), user);
         return AuthResponse.builder()
                 .token(token)

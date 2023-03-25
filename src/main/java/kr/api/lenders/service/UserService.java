@@ -8,6 +8,7 @@ import kr.api.lenders.error.DuplicationException;
 import kr.api.lenders.error.ForbiddenException;
 import kr.api.lenders.error.NotFoundException;
 import kr.api.lenders.error.ParameterValidationException;
+import kr.api.lenders.service.value.UserLoginReqeust;
 import kr.api.lenders.service.value.UserRegisterRequest;
 import kr.api.lenders.service.value.UserResponse;
 import kr.api.lenders.service.value.UserUpdateRequest;
@@ -73,5 +74,17 @@ public class UserService {
                 .role(UserRoleType.ROLE_USER)
                 .build();
         return userRepository.save(user);
+    }
+
+    public User login(UserLoginReqeust userLoginReqeust) {
+        User user = userRepository.findByEmail(userLoginReqeust.getEmail())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        if (!encoder.matches(userLoginReqeust.getPassword(), user.getPassword())) {
+            throw new ParameterValidationException("Invalid password");
+        }
+
+        return user;
     }
 }
