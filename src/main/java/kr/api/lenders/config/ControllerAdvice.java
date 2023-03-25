@@ -153,6 +153,7 @@ public class ControllerAdvice implements ResponseBodyAdvice<Object> {
     /**
      * [TODO]
      *   add handler when no request body is present (or consider combining with above handlers)
+     *   add handler for HttpRequestMethodNotSupportedException (no url mapping)
      */
 
     private String getMessage(Throwable throwable) {
