@@ -7,14 +7,21 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import kr.api.lenders.domain.User;
 import kr.api.lenders.service.PostService;
+import kr.api.lenders.service.ReviewService;
 import kr.api.lenders.service.value.PostCreateOrUpdateRequest;
 import kr.api.lenders.service.value.PostResponse;
 import kr.api.lenders.service.value.PostUpdateTraderRequest;
+import kr.api.lenders.service.value.ReviewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -27,6 +34,9 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
     @NotNull
     private final PostService postService;
+
+    @NotNull
+    private final ReviewService reviewService;
 
     @Operation(summary = "Get post", description = "Get post by id")
     @ApiResponses({
@@ -106,4 +116,21 @@ public class PostController {
         final User currentUser = (User) authentication.getPrincipal();
         return postService.remove(id, currentUser);
     }
+
+    @Operation(summary = "Get reviews by post", description = "Get reviews by post")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    useReturnTypeSchema = true
+            )
+    })
+    @GetMapping(value = "/posts/{id}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<ReviewResponse> getReviewsByPost(
+            @PathVariable("id") @Min(1) final long id,
+            @ParameterObject @PageableDefault(size = 15, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return reviewService.findAllByPostId(id, pageable);
+    }
+
 }

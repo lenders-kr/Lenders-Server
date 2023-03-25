@@ -7,8 +7,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public enum PostStatusType {
     AVAILABLE("AVAILABLE"),
-    TRADING("TRADING"),
-    SOLD("SOLD"),
+    RESERVING("RESERVING"),
+    LENDING("LENDING"),
+    LENT("LENT"),
+    RETURNED("RETURNED"),
+    DONE("DONE"),
     REMOVED("REMOVED");
 
     @Getter

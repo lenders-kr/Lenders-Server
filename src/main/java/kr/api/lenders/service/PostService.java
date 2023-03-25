@@ -66,11 +66,13 @@ public class PostService {
             throw new ForbiddenException("Cannot update other user's post");
         }
 
-        if (!post.getStatus().equals(PostStatusType.AVAILABLE)) {
-            throw new BadRequestException("Cannot update post that is not available");
+        if (post.getStatus() != PostStatusType.AVAILABLE &&
+                post.getStatus() != PostStatusType.RESERVING) {
+            throw new BadRequestException("Cannot update post with status: " + post.getStatus());
         }
 
         post.updateInfo(postCreateOrUpdateRequest);
+
         if (!post.getImages().isEmpty()) {
             post.removeAllImages();
         }
@@ -94,6 +96,11 @@ public class PostService {
         if (postUpdateTraderRequest.getTraderId() != null &&
                 post.getUser().getId() == postUpdateTraderRequest.getTraderId()) {
             throw new ForbiddenException("Post's owner cannot trade one's own post");
+        }
+
+        if (post.getStatus() != PostStatusType.AVAILABLE &&
+                post.getStatus() != PostStatusType.RESERVING) {
+            throw new BadRequestException("Cannot update post with status: " + post.getStatus());
         }
 
         User trader = postUpdateTraderRequest.getTraderId() != null ?
