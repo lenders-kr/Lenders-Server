@@ -139,6 +139,17 @@ public class ControllerAdvice implements ResponseBodyAdvice<Object> {
         return resBody;
     }
 
+    @ExceptionHandler({ConflictException.class})
+    @ResponseStatus(CONFLICT)
+    @ResponseBody
+    public Map<String, Object> handleConflictParameterException(final Throwable throwable) {
+        Map<String, Object> resBody = new HashMap<>();
+        resBody.put("status", CONFLICT.value());
+        resBody.put("message", getMessage(throwable));
+
+        return resBody;
+    }
+
     /**
      * [TODO]
      *   add handler when no request body is present (or consider combining with above handlers)

@@ -12,6 +12,7 @@ import kr.api.lenders.service.value.PostResponse;
 import kr.api.lenders.service.value.PostUpdateTraderRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,9 @@ public class PostService {
 
     @NotNull
     private final transient UserService userService;
+
+    @NotNull
+    private final transient UserBookmarkPostRepository userBookmarkPostRepository;
 
     public Post find(final long id) {
         return postRepository.findByIdAndStatusNot(id, PostStatusType.REMOVED)
@@ -100,6 +104,7 @@ public class PostService {
         return PostResponse.of(post);
     }
 
+    @Transactional
     public PostResponse remove(long id, User currentUser) {
         Post post = find(id);
         if (post.getUser().getId() != currentUser.getId()) {
@@ -112,6 +117,9 @@ public class PostService {
 
         post.remove();
         post = postRepository.save(post);
+
+        // remove all related UserBookmarkPost
+        userBookmarkPostRepository.deleteAllByPostId(post.getId());
 
         return PostResponse.of(post);
     }
