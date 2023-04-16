@@ -24,3 +24,6 @@ springdoc:
     operations-sorter: alpha
   default-consumes-media-type: application/json;charset=UTF-8
   default-produces-media-type: application/json;charset=UTF-8
+kakao:
+  api:
+    key: "0133bc1af4272487793cfbf0c408fe83" # kakao map API key, create separate for production
