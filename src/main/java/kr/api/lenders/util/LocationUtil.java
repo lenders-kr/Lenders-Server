@@ -1,17 +1,26 @@
 package kr.api.lenders.util;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import kr.api.lenders.domain.Location;
+import kr.api.lenders.error.NotFoundException;
+import kr.api.lenders.error.ServiceUnavailableException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @Component
 public class LocationUtil {
 
-    @Value("${kakao.api.key}") // Add your Kakao API key as a property in your Spring Boot application.properties file
+    @Value("${kakao.api.key}")
     private String kakaoApiKey;
 
     private static final String KAKAO_API_URL = "https://dapi.kakao.com/v2/local/geo/coord2regioncode.json";
@@ -23,40 +32,45 @@ public class LocationUtil {
         headers.set("Authorization", "KakaoAK " + kakaoApiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        String apiUrl = KAKAO_API_URL + "?x=" + longitude + "&y=" + latitude;
-        Location location;
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+        URI uri = UriComponentsBuilder
+                .fromUriString(KAKAO_API_URL)
+                .queryParam("x", longitude)
+                .queryParam("y", latitude)
+                .build()
+                .toUri();
 
-        // [TODO] change exceptions to custom exceptions
         LocationApiResponse response;
         try {
-            response = restTemplate.getForObject(apiUrl, LocationApiResponse.class, headers);
+            response = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, LocationApiResponse.class).getBody();
         } catch (RestClientException ex) {
-            throw new RuntimeException("Failed to retrieve location information from Kakao API.", ex);
+            throw new ServiceUnavailableException("Failed to retrieve location information from Kakao API.");
         }
 
         if (response == null || response.getDocuments() == null || response.getDocuments().length == 0) {
-            throw new RuntimeException("Location not found for given coordinates.");
+            throw new NotFoundException("Location not found for given coordinates.");
         }
 
         LocationApiDocument selectedDocument = getSelectedDocument(response);
-        if (selectedDocument == null) {
-            throw new RuntimeException("Location not found for given coordinates.");
+        if (selectedDocument == null ||
+                ObjectUtils.isEmpty(selectedDocument.getRegionType()) ||
+                ObjectUtils.isEmpty(selectedDocument.getRegion1depthName()) ||
+                ObjectUtils.isEmpty(selectedDocument.getRegion2depthName())) {
+            throw new NotFoundException("Location not found for given coordinates.");
         }
 
-        location = Location.builder()
+        return Location.builder()
                 .province(selectedDocument.getRegion1depthName())
                 .district(selectedDocument.getRegion2depthName())
                 .latitude(latitude)
                 .longitude(longitude)
                 .build();
-
-        return location;
     }
 
     private LocationApiDocument getSelectedDocument(LocationApiResponse response) {
         LocationApiDocument selectedDocument = null;
         for (LocationApiDocument document : response.getDocuments()) {
-            if (document.getRegionType().equals("H")) {
+            if ("H".equals(document.getRegionType())) {
                 selectedDocument = document;
                 break;
             } else if (selectedDocument == null) {
@@ -81,8 +95,13 @@ public class LocationUtil {
     }
 
     private static class LocationApiDocument {
+        @JsonProperty("region_type") // field mapping for region_type
         private String regionType;
+
+        @JsonProperty("region_1depth_name")
         private String region1depthName;
+
+        @JsonProperty("region_2depth_name")
         private String region2depthName;
 
         public String getRegionType() {

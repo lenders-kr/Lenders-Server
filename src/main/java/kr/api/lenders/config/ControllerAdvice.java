@@ -150,6 +150,17 @@ public class ControllerAdvice implements ResponseBodyAdvice<Object> {
         return resBody;
     }
 
+    @ExceptionHandler({ServiceUnavailableException.class})
+    @ResponseStatus(SERVICE_UNAVAILABLE)
+    @ResponseBody
+    public Map<String, Object> handleServiceUnavailableException(final Throwable throwable) {
+        Map<String, Object> resBody = new HashMap<>();
+        resBody.put("status", SERVICE_UNAVAILABLE.value());
+        resBody.put("message", getMessage(throwable));
+
+        return resBody;
+    }
+
     /**
      * [TODO]
      *   add handler when no request body is present (or consider combining with above handlers)
