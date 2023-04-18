@@ -21,11 +21,9 @@ public class LocationService {
     @NotNull
     private final transient LocationUtil locationUtil;
 
-    public LocationResponse findOne(long id) {
-        return LocationResponse.of(
-                locationRepository.findById(id)
-                        .orElseThrow(() -> new NotFoundException("Location not found")
-        ));
+    public Location findOne(long id) {
+        return locationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Location not found"));
     }
 
     @Transactional

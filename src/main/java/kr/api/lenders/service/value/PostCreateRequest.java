@@ -2,31 +2,28 @@ package kr.api.lenders.service.value;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import kr.api.lenders.controller.annotation.ValueOfEnum;
 import kr.api.lenders.domain.type.PostCategoryType;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
 
-@Data
+@Value
 @AllArgsConstructor
-@Builder
-public class PostCreateOrUpdateRequest {
+public class PostCreateRequest {
     @Parameter(
             name = "title",
             description = "Title of post (1 ~ 50 characters)",
             required = true,
             schema = @Schema(type = "string", format = "string")
     )
-    @NotBlank
     @Length(min = 1, max = 50)
-    private String title;
+    String title;
 
     @Parameter(
             name = "description",
@@ -34,9 +31,8 @@ public class PostCreateOrUpdateRequest {
             required = true,
             schema = @Schema(type = "string", format = "string")
     )
-    @NotBlank
     @Length(min = 10, max = 1000)
-    private String description;
+    String description;
 
     @Parameter(
             name = "price",
@@ -44,8 +40,8 @@ public class PostCreateOrUpdateRequest {
             required = true,
             schema = @Schema(type = "number", format = "double")
     )
-    @PositiveOrZero
-    private double price;
+    @Min(0)
+    double price;
 
     @Parameter(
             name = "category",
@@ -53,31 +49,33 @@ public class PostCreateOrUpdateRequest {
             required = true,
             schema = @Schema(implementation = PostCategoryType.class)
     )
-    @NotNull
     @ValueOfEnum(enumClass = PostCategoryType.class, message = "Invalid category type")
-    private String category;
+    String category;
 
     @Parameter(
             name = "currency",
-            description = "Currency",
+            description = "Currency of post",
             required = true,
-            schema = @Schema(type = "string", format = "string"),
-            example = "KRW"
+            schema = @Schema(type = "string", format = "string")
     )
     @NotBlank
-    private String currency;
+    String currency;
 
     @Parameter(
             name = "images",
-            description = "Images of post",
+            description = "Images of post (min 1, max 10)",
             required = true,
             schema = @Schema(type = "array", format = "string")
     )
-    @NotNull
-    private List<String> images;
+    @Size(min = 1, max = 10)
+    List<String> images;
 
-    /**
-     * [TODO] add location field
-     */
-
+    @Parameter(
+            name = "locationId",
+            description = "Location ID of post",
+            required = true,
+            schema = @Schema(type = "number", format = "long")
+    )
+    @Min(1)
+    long locationId;
 }

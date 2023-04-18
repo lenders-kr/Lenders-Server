@@ -7,9 +7,7 @@ import kr.api.lenders.domain.type.PostStatusType;
 import kr.api.lenders.error.BadRequestException;
 import kr.api.lenders.error.ForbiddenException;
 import kr.api.lenders.error.NotFoundException;
-import kr.api.lenders.service.value.PostCreateOrUpdateRequest;
-import kr.api.lenders.service.value.PostResponse;
-import kr.api.lenders.service.value.PostUpdateTraderRequest;
+import kr.api.lenders.service.value.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +27,9 @@ public class PostService {
     @NotNull
     private final transient UserBookmarkPostRepository userBookmarkPostRepository;
 
+    @NotNull
+    private final transient LocationService locationService;
+
     public Post find(final long id) {
         return postRepository.findByIdAndStatusNot(id, PostStatusType.REMOVED)
                 .orElseThrow(() -> new NotFoundException("Post not found"));
@@ -38,29 +39,29 @@ public class PostService {
         return PostResponse.of(find(id));
     }
 
-    public PostResponse save(final PostCreateOrUpdateRequest postCreateOrUpdateRequest, final User currentUser) {
+    public PostResponse save(final PostCreateRequest postCreateRequest, final User currentUser) {
+        Location location = locationService.findOne(postCreateRequest.getLocationId());
         Post post = Post.builder()
                 .user(currentUser)
-                .title(postCreateOrUpdateRequest.getTitle())
-                .description(postCreateOrUpdateRequest.getDescription())
-                .price(postCreateOrUpdateRequest.getPrice())
-                .currency(postCreateOrUpdateRequest.getCurrency())
-                .category(PostCategoryType.valueOf(postCreateOrUpdateRequest.getCategory()))
+                .title(postCreateRequest.getTitle())
+                .description(postCreateRequest.getDescription())
+                .price(postCreateRequest.getPrice())
+                .currency(postCreateRequest.getCurrency())
+                .category(PostCategoryType.valueOf(postCreateRequest.getCategory()))
+                .location(location)
                 .build();
         post = postRepository.save(post);
 
-        if (!postCreateOrUpdateRequest.getImages().isEmpty()) {
-            List<PostImage> images = newPostImages(post.getId(), postCreateOrUpdateRequest.getImages());
-            for (PostImage image : images) {
-                post.addImage(image);
-            }
-            post = postRepository.save(post);
+        List<PostImage> images = newPostImages(post.getId(), postCreateRequest.getImages());
+        for (PostImage image : images) {
+            post.addImage(image);
         }
+        post = postRepository.save(post);
 
         return PostResponse.of(post);
     }
 
-    public PostResponse update(final long id, final PostCreateOrUpdateRequest postCreateOrUpdateRequest, final User currentUser) {
+    public PostResponse update(final long id, final PostUpdateRequest postUpdateRequest, final User currentUser) {
         Post post = find(id);
         if (post.getUser().getId() != currentUser.getId()) {
             throw new ForbiddenException("Cannot update other user's post");
@@ -71,18 +72,20 @@ public class PostService {
             throw new BadRequestException("Cannot update post with status: " + post.getStatus());
         }
 
-        post.updateInfo(postCreateOrUpdateRequest);
+        Location location = locationService.findOne(postUpdateRequest.getLocationId());
+        post.updateInfo(postUpdateRequest.getTitle(), postUpdateRequest.getDescription(),
+                postUpdateRequest.getPrice(), postUpdateRequest.getCurrency(),
+                PostCategoryType.valueOf(postUpdateRequest.getCategory()), location);
 
-        if (!post.getImages().isEmpty()) {
-            post.removeAllImages();
+        // remove all existing images first
+        post.removeAllImages();
+
+        // add new images
+        List<PostImage> images = newPostImages(post.getId(), postUpdateRequest.getImages());
+        for (PostImage image : images) {
+            post.addImage(image);
         }
-        if (!postCreateOrUpdateRequest.getImages().isEmpty()) {
-            List<PostImage> newPostImageList = newPostImages(post.getId(), postCreateOrUpdateRequest.getImages());
-            for (PostImage image : newPostImageList) {
-                post.addImage(image);
-            }
-            post = postRepository.save(post);
-        }
+        post = postRepository.save(post);
 
         return PostResponse.of(post);
     }

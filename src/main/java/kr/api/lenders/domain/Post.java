@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import kr.api.lenders.domain.type.PostCategoryType;
 import kr.api.lenders.domain.type.PostStatusType;
-import kr.api.lenders.service.value.PostCreateOrUpdateRequest;
+import kr.api.lenders.service.value.PostUpdateRequest;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
@@ -67,10 +67,6 @@ public class Post {
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime tradedAt;
 
-    /**
-     * [TODO] add a field (or a table) for post's trading history
-     */
-
     @CreatedDate
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
@@ -82,26 +78,35 @@ public class Post {
     @OneToMany(mappedBy="postId", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<PostImage> images = new ArrayList<>();
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "location_id")
+    private Location location;
+
     /**
-     * [TODO] add location field
+     * [TODO] add a field (or a table) for post's trading history
      */
 
     @Builder
-    public Post(User user, String title, String description, double price, String currency, PostCategoryType category) {
+    public Post(User user, String title, String description, double price, String currency, PostCategoryType category,
+                Location location) {
         this.user = user;
         this.title = title;
         this.description = description;
         this.price = price;
         this.currency = currency;
         this.category = category;
+        this.location = location;
     }
 
-    public void updateInfo(PostCreateOrUpdateRequest createOrUpdateRequest) {
-        this.title = createOrUpdateRequest.getTitle();
-        this.description = createOrUpdateRequest.getDescription();
-        this.price = createOrUpdateRequest.getPrice();
-        this.currency = createOrUpdateRequest.getCurrency();
-        this.category = PostCategoryType.valueOf(createOrUpdateRequest.getCategory());
+    public void updateInfo(String title, String description, double price, String currency, PostCategoryType category,
+                           Location location) {
+        this.title = title;
+        this.description = description;
+        this.price = price;
+        this.currency = currency;
+        this.category = category;
+        this.location = location;
     }
 
     public void updateTrader(User trader) {
