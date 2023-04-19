@@ -130,4 +130,19 @@ public class PostController {
         return reviewService.findAllByPostId(id, pageable);
     }
 
+    @Operation(summary = "Get posts", description = "Get posts")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OK",
+                    useReturnTypeSchema = true
+            )
+    })
+    @GetMapping(value = "/posts", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<PostResponse> getPosts(
+            @ParameterObject @PageableDefault(size = 15, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam String district
+    ) {
+        return postService.findAllByLocationDistrict(district, pageable);
+    }
 }
