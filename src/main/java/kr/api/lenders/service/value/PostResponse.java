@@ -43,6 +43,8 @@ public class PostResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
     LocalDateTime updatedAt;
 
+    LocationResponse location;
+
     public static PostResponse of(final Post post) {
         PostResponseBuilder postResponse =  PostResponse.builder()
                 .id(post.getId())
@@ -56,7 +58,8 @@ public class PostResponse {
                 .images(post.getImages())
                 .tradedAt(post.getTradedAt())
                 .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt());
+                .updatedAt(post.getUpdatedAt())
+                .location(LocationResponse.of(post.getLocation()));
 
         if (post.getTrader() != null) {
             postResponse.trader(UserResponse.of(post.getTrader()));

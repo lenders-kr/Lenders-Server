@@ -25,7 +25,7 @@ public class LocationController {
      */
     @GetMapping(value = "/locations/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public LocationResponse getLocation(@PathVariable("id") final long id) {
-        return locationService.findOne(id);
+        return LocationResponse.of(locationService.findOne(id));
     }
 
     @PostMapping(value = "/location", produces = MediaType.APPLICATION_JSON_VALUE)
